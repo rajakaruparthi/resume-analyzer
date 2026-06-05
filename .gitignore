@@ -5,3 +5,17 @@
 out/
 HELP.md
 mvn*
+target/
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.7z
+*.db

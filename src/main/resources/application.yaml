@@ -1,6 +1,10 @@
 spring:
   application:
     name: resume-analyzer-backend
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
 
   datasource:
     url: ${SPRING_DATASOURCE_URL}
@@ -47,13 +51,6 @@ management:
     health:
       show-details: when-authorized
 
-# OpenAPI
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method
 
 # App config
 app:
@@ -62,6 +59,32 @@ app:
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
 
+# AWS S3 Configuration
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME:resume-analyzer-dev}
+    region: ${AWS_S3_REGION:us-east-1}
+    presigned-url-expiration-minutes: ${AWS_PRESIGNED_URL_EXPIRATION_MINUTES:15}
+    access-key-id: ${AWS_ACCESS_KEY_ID:}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+
+tika:
+  max-chars: -1   # set to e.g. 5_000_000 to cap memory on giant files
+
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+    try-it-out-enabled: true
+    display-request-duration: true
+  show-actuator: false           # hide actuator endpoints from docs
+  packages-to-scan: com.sprint.analyzer.controller
+  paths-to-match: /api/**
 ---
 # AWS profile — activate with: --spring.profiles.active=aws
 spring:
@@ -83,3 +106,5 @@ logging:
     com.sprint: INFO
   pattern:
     console: '{"time":"%d","level":"%p","logger":"%logger","msg":"%m"}%n'  # structured JSON logs for CloudWatch
+
+
