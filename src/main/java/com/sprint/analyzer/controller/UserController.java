@@ -1,6 +1,8 @@
 package com.sprint.analyzer.controller;
 
 import com.sprint.analyzer.entity.User;
+import com.sprint.analyzer.properties.EmailVerificationProperties;
+import com.sprint.analyzer.service.EmailVerificationService;
 import com.sprint.analyzer.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,8 +19,10 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final EmailVerificationService emailVerificationService;
+    private final EmailVerificationProperties verificationProperties;
 
-    @PostMapping
+    @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> createUser(@RequestBody User user) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(userService.buildCreateUserResponse(user));
@@ -27,6 +31,19 @@ public class UserController {
             response.put("success", false);
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+        }
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<User> loginUser(@RequestBody Map<String, String> credentials) {
+        String email = credentials.get("email");
+        String password = credentials.get("password");
+
+        User user = userService.loginUser(email, password);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 
@@ -85,6 +102,26 @@ public class UserController {
     @GetMapping("/count/total")
     public ResponseEntity<Map<String, Object>> getUserCount() {
         return ResponseEntity.ok(userService.buildGetUserCountResponse());
+    }
+
+    @GetMapping("/verify")
+    public ResponseEntity<Map<String, Object>> verifyEmail(@RequestParam("token") String token) {
+        try {
+            emailVerificationService.verify(token);
+            return ResponseEntity.ok(Map.of("success", true, "message", "Email verified successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<Map<String, Object>> resend(@RequestBody Map<String, String> body) {
+        try {
+            emailVerificationService.resend(body.get("email"));
+            return ResponseEntity.ok(Map.of("success", true, "message", "Verification email sent"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "error", e.getMessage()));
+        }
     }
 
 }

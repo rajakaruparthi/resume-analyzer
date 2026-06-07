@@ -1,18 +1,16 @@
 package com.sprint.analyzer.entity;
 
+import com.sprint.analyzer.entity.req.Role;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-/**
- * User entity mapped to user_info table.
- * Represents a user in the resume analyzer system.
- */
 @Entity
 @Table(name = "user_info")
 @Data
@@ -21,7 +19,8 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @GeneratedValue
+    @Column(columnDefinition = "uuid")
     private UUID id;
 
     @Column(name = "email", nullable = false, unique = true)
@@ -30,8 +29,9 @@ public class User {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "password_hash", nullable = false)
-    private String passwordHash;
+    @Column(name = "password", nullable = false)
+    @PasswordHash
+    private String password;
 
     @Column(name = "phone", length = 20)
     private String phone;
@@ -40,4 +40,13 @@ public class User {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
+    @Column(name = "email_verified_at")
+    private LocalDateTime emailVerifiedAt;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role;  // default role
 }

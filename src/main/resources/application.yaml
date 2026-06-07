@@ -7,9 +7,9 @@ spring:
       max-request-size: 20MB
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL}
-    username: ${SPRING_DATASOURCE_USERNAME}
-    password: ${SPRING_DATASOURCE_PASSWORD}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/resume_analyzer}
+    username: ${SPRING_DATASOURCE_USERNAME:sprint}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -17,6 +17,23 @@ spring:
       connection-timeout: 30000
       idle-timeout: 600000
       max-lifetime: 1800000
+
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:rajakaruparthi@gmail.com}
+    password: ${MAIL_PASSWORD:Chowdeswari@0805}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
+
+
 
   jpa:
     hibernate:
@@ -54,19 +71,25 @@ management:
 
 # App config
 app:
-  plan:
-    start-date: ${PLAN_START_DATE:}   # leave empty = tomorrow; or set YYYY-MM-DD
   cors:
-    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:5173}
+  mail:
+    from: ${MAIL_FROM:rajakaruparthi@gmail.com}
+    from-name: Resume Analyzer
+  verification:
+    token-ttl-minutes: 60
+    base-url: ${APP_BASE_URL:http://localhost:8080}     # backend URL used in the email link
+    frontend-url: ${FRONTEND_URL:http://localhost:4200} # for redirect after click
 
 # AWS S3 Configuration
 aws:
   s3:
-    bucket-name: ${AWS_S3_BUCKET_NAME:resume-analyzer-dev}
-    region: ${AWS_S3_REGION:us-east-1}
+    bucket-name: ${AWS_S3_BUCKET_NAME:resume-analyzer-ra}
+    region: ${AWS_S3_REGION:us-east-2}
     presigned-url-expiration-minutes: ${AWS_PRESIGNED_URL_EXPIRATION_MINUTES:15}
-    access-key-id: ${AWS_ACCESS_KEY_ID:}
-    secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+    access-key-id: ${AWS_ACCESS_KEY_ID:AKIA25IMVSS2KUYIVWE6}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY: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}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY:Bn9VF5BzPNjAN1lneOO2BtEC5hn75XRo4V1VyDmy}
 
 tika:
   max-chars: -1   # set to e.g. 5_000_000 to cap memory on giant files
