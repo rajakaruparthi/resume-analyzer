@@ -88,7 +88,6 @@ aws:
     presigned-url-expiration-minutes: ${AWS_PRESIGNED_URL_EXPIRATION_MINUTES:15}
     access-key-id: ${AWS_ACCESS_KEY_ID}
     secret-access-key: ${AWS_SECRET_ACCESS_KEY}
-
 tika:
   max-chars: -1   # set to e.g. 5_000_000 to cap memory on giant files
 
