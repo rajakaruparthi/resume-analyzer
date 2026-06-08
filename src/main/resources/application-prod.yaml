@@ -1,0 +1,60 @@
+spring:
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          batch_size: 100
+
+  flyway:
+    baseline-on-migrate: false   # prod schema should already be baselined
+
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
+server:
+  port: 8080
+  error:
+    include-message: never        # don't leak stack traces in prod
+    include-binding-errors: never
+  forward-headers-strategy: native  # behind ALB/nginx
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true            # /actuator/health/liveness and /readiness for k8s/ECS
+
+logging:
+  level:
+    root: WARN
+    com.sprint: INFO
+    org.hibernate.SQL: WARN
+    org.springframework.web: WARN
+  pattern:
+    console: '{"time":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%p","logger":"%logger","thread":"%t","msg":"%m"}%n'
+
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}     # no default — must be supplied
+
+  verification:
+    token-ttl-minutes: 1440          # 24h in prod (more forgiving)
+
+aws:
+  s3:
+    presigned-url-expiration-minutes: 10
+
+springdoc:
+  api-docs:
+    enabled: ${SPRINGDOC_ENABLED:false}    # disable swagger in prod by default
+  swagger-ui:
+    enabled: ${SPRINGDOC_ENABLED:false}

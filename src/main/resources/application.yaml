@@ -7,9 +7,9 @@ spring:
       max-request-size: 20MB
 
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/resume_analyzer}
-    username: ${SPRING_DATASOURCE_USERNAME:sprint}
-    password: ${SPRING_DATASOURCE_PASSWORD:password}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
@@ -22,7 +22,6 @@ spring:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
     username: ${MAIL_USERNAME:rajakaruparthi@gmail.com}
-    password: ${MAIL_PASSWORD:Chowdeswari@0805}
     properties:
       mail:
         smtp:
@@ -85,11 +84,10 @@ app:
 aws:
   s3:
     bucket-name: ${AWS_S3_BUCKET_NAME:resume-analyzer-ra}
-    region: ${AWS_S3_REGION:us-east-2}
+    region: ${AWS_S3_REGION}
     presigned-url-expiration-minutes: ${AWS_PRESIGNED_URL_EXPIRATION_MINUTES:15}
-    access-key-id: ${AWS_ACCESS_KEY_ID:AKIA25IMVSS2KUYIVWE6}
-    secret-access-key: ${AWS_SECRET_ACCESS_KEY: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}
-    secret-access-key: ${AWS_SECRET_ACCESS_KEY:Bn9VF5BzPNjAN1lneOO2BtEC5hn75XRo4V1VyDmy}
+    access-key-id: ${AWS_ACCESS_KEY_ID}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY}
 
 tika:
   max-chars: -1   # set to e.g. 5_000_000 to cap memory on giant files
@@ -131,3 +129,11 @@ logging:
     console: '{"time":"%d","level":"%p","logger":"%logger","msg":"%m"}%n'  # structured JSON logs for CloudWatch
 
 
+
+
+# JWT Configuration
+app:
+  jwt:
+    secret: ${JWT_SECRET:your-dev-secret-key-replace-me-with-a-long-random-string-at-least-32-bytes-base64-encoded}
+    access-token-expiration-minutes: 15
+    refresh-token-expiration-minutes: 1440 # 24 hours

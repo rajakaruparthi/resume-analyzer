@@ -19,3 +19,6 @@ target/
 *.tar.gz
 *.7z
 *.db
+.env
+.env.prod
+.env.*.local

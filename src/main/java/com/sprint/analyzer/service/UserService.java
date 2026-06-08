@@ -2,6 +2,7 @@ package com.sprint.analyzer.service;
 
 import com.sprint.analyzer.entity.FeatureFlag;
 import com.sprint.analyzer.entity.User;
+import com.sprint.analyzer.entity.req.RegisterRequest;
 import com.sprint.analyzer.entity.req.Role;
 import com.sprint.analyzer.repo.UserRepository;
 import lombok.AllArgsConstructor;
@@ -26,20 +27,69 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final FeatureFlagService featureFlagService;
+    private final EmailVerificationService emailVerificationService;
 
     public User createUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
             log.warn("Attempt to create user with existing email: {}", user.getEmail());
             throw new IllegalArgumentException("User with email " + user.getEmail() + " already exists");
         }
-        user.setEmailVerified(false);
         user.setRole(user.getRole() != null ? user.getRole() : Role.USER);
         User saved = userRepository.save(user);
         log.info("Creating new user with email: {}", user.getEmail());
-        if(featureFlagService.isEnabled("email_verification")) {
+        if (featureFlagService.isEnabled("email_verification")) {
             emailVerificationService.sendVerificationFor(saved);
+        } else {
+            user.setEmailVerified(true);
         }
         return saved;
+    }
+
+    public User registerUser(RegisterRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            log.warn("Attempt to register user with existing email: {}", request.getEmail());
+            throw new IllegalArgumentException("User with email " + request.getEmail() + " already exists");
+        }
+
+        boolean verificationEnabled = featureFlagService.isEnabled("email_verification");
+
+        User user = new User();
+        user.setEmail(request.getEmail());
+        user.setName(request.getName());
+        user.setPhone(request.getPhone());
+        user.setPassword(request.getPassword()); // Password is already hashed by @PasswordHash deserializer
+        user.setRole(request.getRole() != null ? request.getRole() : Role.USER);
+        user.setEmailVerified(!verificationEnabled); // If feature is OFF, treat as verified immediately
+
+        User savedUser = userRepository.save(user);
+        log.info("Registered new user with email: {} (verificationEnabled={})", savedUser.getEmail(), verificationEnabled);
+
+        if (verificationEnabled) {
+            emailVerificationService.sendVerificationFor(savedUser);
+        }
+        return savedUser;
+    }
+
+
+    public User authenticateUser(String email, String rawPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    log.warn("Authentication attempt with non-existent email: {}", email);
+                    return new RuntimeException("Invalid email or password"); // Generic message for security
+                });
+
+        if (featureFlagService.isEnabled("email_verification") && !user.isEmailVerified()) {
+            log.warn("Authentication attempt with unverified email: {}", email);
+            throw new RuntimeException("Email not verified. Please check your inbox.");
+        }
+
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            log.warn("Invalid password attempt for email: {}", email);
+            throw new RuntimeException("Invalid email or password"); // Generic message for security
+        }
+
+        log.info("User authenticated successfully: {}", email);
+        return user;
     }
 
     public Optional<User> getUserById(UUID id) {
@@ -225,8 +275,5 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("Invalid credentials"));
         return passwordEncoder.matches(rawPassword, user.getPassword());
     }
-
-    private final EmailVerificationService emailVerificationService;   // add to constructor
-
 
 }

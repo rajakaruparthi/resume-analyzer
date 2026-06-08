@@ -1,0 +1,31 @@
+# === Spring profile ===
+SPRING_PROFILES_ACTIVE=prod
+
+# === Database ===
+SPRING_DATASOURCE_URL=jdbc:postgresql://prod-db.cluster-xxxxx.us-east-2.rds.amazonaws.com:5432/resume_analyzer
+SPRING_DATASOURCE_USERNAME=resume_app
+SPRING_DATASOURCE_PASSWORD=__REPLACE_ME__
+
+# === AWS S3 ===
+AWS_S3_BUCKET_NAME=resume-analyzer-prod
+AWS_S3_REGION=us-east-2
+AWS_ACCESS_KEY_ID=__REPLACE_ME__         # prefer IAM role on EC2/ECS instead!
+AWS_SECRET_ACCESS_KEY=__REPLACE_ME__
+
+# === SMTP (e.g. SES) ===
+MAIL_HOST=email-smtp.us-east-2.amazonaws.com
+MAIL_PORT=587
+MAIL_USERNAME=__REPLACE_ME__
+MAIL_PASSWORD=__REPLACE_ME__
+MAIL_FROM=no-reply@resume-analyzer.com
+
+# === App URLs ===
+APP_BASE_URL=https://api.resume-analyzer.com
+FRONTEND_URL=https://app.resume-analyzer.com
+CORS_ALLOWED_ORIGINS=https://app.resume-analyzer.com
+
+# === Server ===
+SERVER_PORT=8080
+
+# === JVM ===
+JAVA_OPTS=-XX:MaxRAMPercentage=75 -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError

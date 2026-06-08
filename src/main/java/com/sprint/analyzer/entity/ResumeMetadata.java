@@ -45,10 +45,6 @@ public class ResumeMetadata {
     @CreationTimestamp
     private LocalDateTime createdAt;
 
-    /**
-     * Foreign key relationship to User entity.
-     * References user_info table.
-     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
