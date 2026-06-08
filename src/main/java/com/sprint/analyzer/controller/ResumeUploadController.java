@@ -5,6 +5,7 @@ import com.sprint.analyzer.service.ResumeS3Service;
 import com.sprint.analyzer.service.ResumeTextExtractionService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ import java.util.Map;
 @RequestMapping("/api/resumes")
 @AllArgsConstructor
 @Slf4j
+@ConditionalOnProperty(prefix = "aws.s3", name = "bucket-name")
 public class ResumeUploadController {
 
     private final ResumeS3Service resumeS3Service;
@@ -31,7 +33,6 @@ public class ResumeUploadController {
         return ResponseEntity.ok(resumeTextExtractionService.extractFromS3(s3Key));
     }
 
-    // Upload + extract in one call (handy for testing)
     @PostMapping("/extract")
     public ResponseEntity<ExtractedText> uploadAndExtract(@RequestParam("file") MultipartFile file) throws Exception {
         return ResponseEntity.ok(

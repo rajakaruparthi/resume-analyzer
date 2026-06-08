@@ -3,13 +3,14 @@ package com.sprint.analyzer.service;
 import com.sprint.analyzer.properties.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,11 +21,11 @@ import java.util.function.Function;
 public class JwtService {
 
     private final JwtProperties jwtProperties;
-    private final SecretKey signInKey;
+    private final Key signInKey;
 
     public JwtService(JwtProperties jwtProperties) {
         this.jwtProperties = jwtProperties;
-        this.signInKey = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.getSecret()));
+        this.signInKey = getSignInKey();
     }
 
     /**
@@ -36,6 +37,12 @@ public class JwtService {
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
+
+    private SecretKey getSignInKey() {
+        byte[] keyBytes = jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
 
     /**
      * Extracts a specific claim from a JWT.
@@ -126,7 +133,7 @@ public class JwtService {
     private Claims extractAllClaims(String token) {
         try {
             return Jwts.parser()
-                    .verifyWith((SecretKey) signInKey)
+                    .verifyWith(getSignInKey())
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
@@ -135,4 +142,5 @@ public class JwtService {
             throw new RuntimeException("Invalid JWT token");
         }
     }
+
 }

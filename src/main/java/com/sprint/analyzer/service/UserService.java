@@ -46,6 +46,7 @@ public class UserService {
     }
 
     public User registerUser(RegisterRequest request) {
+
         if (userRepository.existsByEmail(request.getEmail())) {
             log.warn("Attempt to register user with existing email: {}", request.getEmail());
             throw new IllegalArgumentException("User with email " + request.getEmail() + " already exists");
@@ -57,17 +58,18 @@ public class UserService {
         user.setEmail(request.getEmail());
         user.setName(request.getName());
         user.setPhone(request.getPhone());
-        user.setPassword(request.getPassword()); // Password is already hashed by @PasswordHash deserializer
+        user.setPassword(request.getPassword());
         user.setRole(request.getRole() != null ? request.getRole() : Role.USER);
-        user.setEmailVerified(!verificationEnabled); // If feature is OFF, treat as verified immediately
 
-        User savedUser = userRepository.save(user);
-        log.info("Registered new user with email: {} (verificationEnabled={})", savedUser.getEmail(), verificationEnabled);
+        log.info("Registered new user with email: {} (verificationEnabled={})", user.getEmail(), verificationEnabled);
 
         if (verificationEnabled) {
-            emailVerificationService.sendVerificationFor(savedUser);
+            emailVerificationService.sendVerificationFor(user);
+        } else {
+            user.setEmailVerified(true);
         }
-        return savedUser;
+
+        return userRepository.save(user);
     }
 
 

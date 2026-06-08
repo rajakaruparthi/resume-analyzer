@@ -5,6 +5,7 @@ import com.sprint.analyzer.connector.TextExtractor;
 import com.sprint.analyzer.model.ExtractedText;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
@@ -12,6 +13,7 @@ import java.io.InputStream;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@ConditionalOnProperty(prefix = "aws.s3", name = "bucket-name")
 public class ResumeTextExtractionService {
 
     private final AwsConnector awsConnector;

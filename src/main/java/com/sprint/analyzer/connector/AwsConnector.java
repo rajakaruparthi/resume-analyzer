@@ -2,6 +2,7 @@ package com.sprint.analyzer.connector;
 
 import com.sprint.analyzer.properties.AwsProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -18,6 +19,7 @@ import java.time.Duration;
 
 @Component
 @Slf4j
+@ConditionalOnProperty(prefix = "aws.s3", name = "bucket-name")
 public class AwsConnector {
 
     private final S3Client s3Client;

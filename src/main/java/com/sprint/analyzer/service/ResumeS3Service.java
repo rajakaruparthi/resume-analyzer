@@ -2,11 +2,13 @@ package com.sprint.analyzer.service;
 
 import com.sprint.analyzer.connector.AwsConnector;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import java.io.InputStream;
 
 @Service
 @Slf4j
+@ConditionalOnProperty(prefix = "aws.s3", name = "bucket-name")
 public class ResumeS3Service {
 
     private final AwsConnector awsConnector;
