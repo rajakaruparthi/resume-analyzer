@@ -85,15 +85,15 @@ app:
     refresh-token-expiration-minutes: 1440 # 24 hours
 # AWS S3 Configuration
 
-#aws:
-#  s3:
-#    bucket-name: ${AWS_S3_BUCKET_NAME:resume-analyzer-ra}
-#    region: ${AWS_S3_REGION:us-east-2}
-#    presigned-url-expiration-minutes: ${AWS_PRESIGNED_URL_EXPIRATION_MINUTES:15}
-#    access-key-id: ${AWS_ACCESS_KEY_ID}
-#    secret-access-key: ${AWS_SECRET_ACCESS_KEY}
-#tika:
-#  max-chars: -1   # set to e.g. 5_000_000 to cap memory on giant files
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME:resumeanalyzerbkt}
+    region: ${AWS_S3_REGION:us-east-2}
+    presigned-url-expiration-minutes: ${AWS_PRESIGNED_URL_EXPIRATION_MINUTES:15}
+    access-key-id: ${AWS_ACCESS_KEY_ID}
+    secret-access-key: ${AWS_SECRET_ACCESS_KEY}
+tika:
+  max-chars: -1   # set to e.g. 5_000_000 to cap memory on giant files
 
 
 springdoc:

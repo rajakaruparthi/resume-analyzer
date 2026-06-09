@@ -1,10 +1,16 @@
 package com.sprint.analyzer.service;
 
 import com.sprint.analyzer.connector.AwsConnector;
+import com.sprint.analyzer.model.S3ObjectDto;
+import com.sprint.analyzer.properties.AwsProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import software.amazon.awssdk.services.s3.model.S3Object;
+
 import java.io.InputStream;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -12,10 +18,28 @@ import java.io.InputStream;
 public class ResumeS3Service {
 
     private final AwsConnector awsConnector;
+    private final AwsProperties awsProperties;
 
-    public ResumeS3Service(AwsConnector awsConnector) {
+    public ResumeS3Service(AwsConnector awsConnector, AwsProperties awsProperties) {
         this.awsConnector = awsConnector;
+        this.awsProperties = awsProperties;
     }
+
+
+    public List<S3ObjectDto> listAllResumes() {
+        log.info("Listing all objects in S3 bucket: {}", awsProperties.getBucketName());
+        List<S3Object> s3Objects = awsConnector.listObjects();
+
+        return s3Objects.stream()
+                .map(s3Object -> S3ObjectDto.builder()
+                        .key(s3Object.key())
+                        .size(s3Object.size())
+                        .lastModified(s3Object.lastModified())
+                        .eTag(s3Object.eTag())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
 
     public String uploadResume(String fileName, InputStream fileStream) {
         try {

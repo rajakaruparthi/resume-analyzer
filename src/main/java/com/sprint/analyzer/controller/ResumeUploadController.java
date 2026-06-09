@@ -1,18 +1,22 @@
 package com.sprint.analyzer.controller;
 
 import com.sprint.analyzer.model.ExtractedText;
+import com.sprint.analyzer.model.S3ObjectDto;
 import com.sprint.analyzer.service.ResumeS3Service;
 import com.sprint.analyzer.service.ResumeTextExtractionService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -24,10 +28,23 @@ import java.util.Map;
 public class ResumeUploadController {
 
     private final ResumeS3Service resumeS3Service;
-
     private final ResumeTextExtractionService resumeTextExtractionService;
 
-    // Extract text from an already-uploaded resume
+    @GetMapping
+    @Operation(summary = "List all resume files in the S3 bucket")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<List<S3ObjectDto>> listAllResumes() {
+        try {
+            log.info("Listing all resume files.");
+            List<S3ObjectDto> resumes = resumeS3Service.listAllResumes();
+            return ResponseEntity.ok(resumes);
+        } catch (RuntimeException e) {
+            log.error("Error listing resume files: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null); // Return null or a custom error DTO
+        }
+    }
+
     @GetMapping("/{s3Key}/extract")
     public ResponseEntity<ExtractedText> extractText(@PathVariable String s3Key) {
         return ResponseEntity.ok(resumeTextExtractionService.extractFromS3(s3Key));

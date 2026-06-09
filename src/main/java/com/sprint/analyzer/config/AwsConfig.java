@@ -23,7 +23,7 @@ public class AwsConfig {
 
     @Bean
     public S3Client s3Client() {
-        String region = awsProperties.getRegion() != null ? awsProperties.getRegion() : "us-east-1";
+        String region = awsProperties.getRegion() != null ? awsProperties.getRegion() : "us-east-2";
 
         if (awsProperties.getAccessKeyId() != null && awsProperties.getSecretAccessKey() != null) {
             AwsBasicCredentials credentials = AwsBasicCredentials.create(

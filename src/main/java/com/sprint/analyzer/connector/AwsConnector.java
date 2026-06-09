@@ -6,8 +6,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -15,6 +14,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.List;
 
 
 @Component
@@ -34,6 +34,26 @@ public class AwsConnector {
                         awsProperties.getRegion() != null ? awsProperties.getRegion() : "us-east-1"
                 ))
                 .build();
+    }
+
+    public List<S3Object> listObjects() {
+        String bucketName = awsProperties.getBucketName();
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalStateException("AWS S3 bucket name not configured.");
+        }
+
+        try {
+            ListObjectsV2Request listObjectsReq = ListObjectsV2Request.builder()
+                    .bucket(bucketName)
+                    .build();
+
+            ListObjectsV2Response listRes = s3Client.listObjectsV2(listObjectsReq);
+            log.info("Listed {} objects in S3 bucket: {}", listRes.contents().size(), bucketName);
+            return listRes.contents();
+        } catch (Exception e) {
+            log.error("Failed to list objects in S3 bucket: {}", bucketName, e);
+            throw new RuntimeException("Failed to list S3 objects: " + e.getMessage(), e);
+        }
     }
 
 
