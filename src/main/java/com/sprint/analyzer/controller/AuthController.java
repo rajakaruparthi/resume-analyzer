@@ -11,10 +11,13 @@ import com.sprint.analyzer.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j; // Add Slf4j for logging
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -42,13 +45,14 @@ public class AuthController {
 
     @PostMapping("/register")
     @Operation(summary = "Register a new user and get JWT tokens")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
         try {
             User user = userService.registerUser(request);
-            UserDetails userDetails = user;
 
-            String accessToken = jwtService.generateAccessToken(userDetails);
-            String refreshToken = jwtService.generateRefreshToken(userDetails);
+            String accessToken = jwtService.generateAccessToken(user);
+            String refreshToken = jwtService.generateRefreshToken(user);
+
+            setTokenCookies(response, accessToken, refreshToken);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(
                     AuthResponse.builder()
@@ -68,7 +72,7 @@ public class AuthController {
 
     @PostMapping("/login")
     @Operation(summary = "Authenticate user and get JWT tokens")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request, HttpServletResponse response) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
@@ -80,6 +84,8 @@ public class AuthController {
 
             String accessToken = jwtService.generateAccessToken(userDetails);
             String refreshToken = jwtService.generateRefreshToken(userDetails);
+
+            setTokenCookies(response, accessToken, refreshToken);
 
             return ResponseEntity.ok(
                     AuthResponse.builder()
@@ -99,8 +105,32 @@ public class AuthController {
 
     @PostMapping("/refresh")
     @Operation(summary = "Refresh access and refresh tokens using a valid refresh token")
-    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        String refreshToken = request.getRefreshToken();
+    public ResponseEntity<AuthResponse> refresh(
+            HttpServletRequest servletRequest,
+            HttpServletResponse response,
+            @RequestBody(required = false) RefreshTokenRequest request) {
+        String refreshToken = null;
+
+        // 1. Try to read from cookie first
+        if (servletRequest.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : servletRequest.getCookies()) {
+                if ("refreshToken".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // Fallback: request body
+        if (refreshToken == null && request != null) {
+            refreshToken = request.getRefreshToken();
+        }
+
+        if (refreshToken == null || refreshToken.isBlank()) {
+            log.warn("Refresh token is missing.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
         String userEmail;
 
         try {
@@ -135,6 +165,8 @@ public class AuthController {
             String newAccessToken = jwtService.generateAccessToken(userDetails);
             String newRefreshToken = jwtService.generateRefreshToken(userDetails);
 
+            setTokenCookies(response, newAccessToken, newRefreshToken);
+
             User user = userService.getUserByEmail(userEmail)
                     .orElseThrow(() -> new RuntimeException("User not found after refresh token validation"));
 
@@ -157,16 +189,76 @@ public class AuthController {
 
     @PostMapping("/logout")
     @Operation(summary = "Invalidate the current JWT token (logout)")
-    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String jwt = authHeader.substring(7);
-            jwtBlacklistService.blacklistToken(jwt);
-            SecurityContextHolder.clearContext();
-            log.info("User logged out successfully by blacklisting token.");
-            return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request, HttpServletResponse response) {
+        String jwt = null;
+        
+        // Try to read from cookie first
+        if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("accessToken".equals(cookie.getName())) {
+                    jwt = cookie.getValue();
+                    break;
+                }
+            }
         }
-        log.warn("Logout attempt without a valid Authorization header.");
-        return ResponseEntity.badRequest().body(Map.of("error", "No valid token found in Authorization header"));
+        
+        // Fallback: Authorization header
+        if (jwt == null) {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                jwt = authHeader.substring(7);
+            }
+        }
+
+        if (jwt != null) {
+            jwtBlacklistService.blacklistToken(jwt);
+            log.info("User logged out successfully by blacklisting token.");
+        }
+        
+        SecurityContextHolder.clearContext();
+        clearTokenCookies(response);
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
+    }
+
+    private void setTokenCookies(HttpServletResponse response, String accessToken, String refreshToken) {
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", accessToken)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(15 * 60)
+                .sameSite("Lax")
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(24 * 60 * 60)
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+    }
+
+    private void clearTokenCookies(HttpServletResponse response) {
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(0)
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
     }
 }

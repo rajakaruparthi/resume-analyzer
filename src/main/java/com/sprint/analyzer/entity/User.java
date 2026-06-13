@@ -52,6 +52,9 @@ public class User implements UserDetails {
     @Column(name = "email_verified_at")
     private LocalDateTime emailVerifiedAt;
 
+    @Column(name = "bucket_name", nullable = false, unique = true)
+    private String bucketName;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role", nullable = false)
     private Role role;  // default role

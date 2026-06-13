@@ -1,6 +1,7 @@
 package com.sprint.analyzer.config;
 
 import com.sprint.analyzer.properties.AwsProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 
 @Configuration
 @EnableConfigurationProperties(AwsProperties.class)
+@ConditionalOnProperty(prefix = "aws.s3", name = "bucket-name")
 public class AwsConfig {
 
     private final AwsProperties awsProperties;
@@ -21,7 +23,7 @@ public class AwsConfig {
 
     @Bean
     public S3Client s3Client() {
-        String region = awsProperties.getRegion() != null ? awsProperties.getRegion() : "us-east-1";
+        String region = awsProperties.getRegion() != null ? awsProperties.getRegion() : "us-east-2";
 
         if (awsProperties.getAccessKeyId() != null && awsProperties.getSecretAccessKey() != null) {
             AwsBasicCredentials credentials = AwsBasicCredentials.create(

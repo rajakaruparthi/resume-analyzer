@@ -2,11 +2,11 @@ package com.sprint.analyzer.connector;
 
 import com.sprint.analyzer.properties.AwsProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
@@ -14,10 +14,12 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.Duration;
+import java.util.List;
 
 
 @Component
 @Slf4j
+@ConditionalOnProperty(prefix = "aws.s3", name = "bucket-name")
 public class AwsConnector {
 
     private final S3Client s3Client;
@@ -34,11 +36,58 @@ public class AwsConnector {
                 .build();
     }
 
+    public void createBucketIfNotExists(String bucketName) {
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalArgumentException("S3 bucket name cannot be null or empty");
+        }
+        try {
+            s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
+            log.info("S3 bucket already exists: {}", bucketName);
+        } catch (NoSuchBucketException e) {
+            log.info("S3 bucket does not exist. Creating bucket: {}", bucketName);
+            CreateBucketRequest.Builder createBucketRequestBuilder = CreateBucketRequest.builder()
+                    .bucket(bucketName);
+            String regionStr = awsProperties.getRegion();
+            if (regionStr != null && !regionStr.equalsIgnoreCase("us-east-1")) {
+                createBucketRequestBuilder.createBucketConfiguration(
+                        CreateBucketConfiguration.builder()
+                                .locationConstraint(BucketLocationConstraint.fromValue(regionStr))
+                                .build()
+                );
+            }
+            CreateBucketResponse bucket = s3Client.createBucket(createBucketRequestBuilder.build());
+            log.debug("Create bucket response: {}", bucket);
+            log.info("S3 bucket created successfully: {}", bucketName);
 
-    public String uploadFile(String fileName, InputStream inputStream, String contentType) throws IOException {
-        String bucketName = awsProperties.getBucketName();
-        if (bucketName == null || bucketName.isEmpty()) {
-            throw new IllegalArgumentException("AWS S3 bucket name not configured");
+        } catch (Exception e) {
+            log.error("Error checking/creating S3 bucket: {}", bucketName, e);
+            throw new RuntimeException("Failed to check/create S3 bucket: " + e.getMessage(), e);
+        }
+    }
+
+    public List<S3Object> listObjects(String bucketName) {
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalArgumentException("AWS S3 bucket name not provided");
+        }
+
+        try {
+            ListObjectsV2Request listObjectsReq = ListObjectsV2Request.builder()
+                    .bucket(bucketName)
+                    .build();
+
+            ListObjectsV2Response listRes = s3Client.listObjectsV2(listObjectsReq);
+            log.info("Listed {} objects in S3 bucket: {}", listRes.contents().size(), bucketName);
+            return listRes.contents();
+        } catch (Exception e) {
+            log.error("Failed to list objects in S3 bucket: {}", bucketName, e);
+            throw new RuntimeException("Failed to list S3 objects: " + e.getMessage(), e);
+        }
+    }
+
+
+    public String uploadFile(String bucketName, String fileName, InputStream inputStream, String contentType) throws IOException {
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalArgumentException("AWS S3 bucket name not provided");
         }
 
         try {
@@ -62,10 +111,9 @@ public class AwsConnector {
     }
 
 
-    public String generatePresignedUploadUrl(String fileName, String contentType) {
-        String bucketName = awsProperties.getBucketName();
-        if (bucketName == null || bucketName.isEmpty()) {
-            throw new IllegalArgumentException("AWS S3 bucket name not configured");
+    public String generatePresignedUploadUrl(String bucketName, String fileName, String contentType) {
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalArgumentException("AWS S3 bucket name not provided");
         }
 
         try {
@@ -97,10 +145,9 @@ public class AwsConnector {
     }
 
 
-    public String generatePresignedDownloadUrl(String fileName) {
-        String bucketName = awsProperties.getBucketName();
-        if (bucketName == null || bucketName.isEmpty()) {
-            throw new IllegalArgumentException("AWS S3 bucket name not configured");
+    public String generatePresignedDownloadUrl(String bucketName, String fileName) {
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalArgumentException("AWS S3 bucket name not provided");
         }
 
         try {
@@ -131,10 +178,9 @@ public class AwsConnector {
     }
 
 
-    public boolean fileExists(String fileName) {
-        String bucketName = awsProperties.getBucketName();
-        if (bucketName == null || bucketName.isEmpty()) {
-            throw new IllegalArgumentException("AWS S3 bucket name not configured");
+    public boolean fileExists(String bucketName, String fileName) {
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalArgumentException("AWS S3 bucket name not provided");
         }
 
         try {
@@ -151,10 +197,9 @@ public class AwsConnector {
     }
 
 
-    public boolean deleteFile(String fileName) {
-        String bucketName = awsProperties.getBucketName();
-        if (bucketName == null || bucketName.isEmpty()) {
-            throw new IllegalArgumentException("AWS S3 bucket name not configured");
+    public boolean deleteFile(String bucketName, String fileName) {
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalArgumentException("AWS S3 bucket name not provided");
         }
 
         try {
@@ -169,10 +214,9 @@ public class AwsConnector {
     }
 
 
-    public InputStream downloadFileStream(String fileName) {
-        String bucketName = awsProperties.getBucketName();
-        if (bucketName == null || bucketName.isEmpty()) {
-            throw new IllegalArgumentException("AWS S3 bucket name not configured");
+    public InputStream downloadFileStream(String bucketName, String fileName) {
+        if (bucketName == null || bucketName.isBlank()) {
+            throw new IllegalArgumentException("AWS S3 bucket name not provided");
         }
         try {
             GetObjectRequest request = GetObjectRequest.builder()
