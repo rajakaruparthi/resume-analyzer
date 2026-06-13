@@ -36,8 +36,8 @@ public class ResumeUploadController {
     private final ResumeTextExtractionService resumeTextExtractionService;
     private final ResumeLlmService resumeLlmService;
     private final ResumeMetadataService resumeMetadataService;
-    private final ResumeMarkdownConverterService resumeMarkdownConverterService;
     private final UserService userService;
+    private final ResumeProcessingService resumeProcessingService;
 
 
     private User getLoggedInUserId(Authentication authentication) {
@@ -154,26 +154,7 @@ public class ResumeUploadController {
                         .body(Map.of("error", "Unsupported file type: " + file.getContentType()));
             }
             User userInfo = getLoggedInUserId(authentication);
-            String bucketName = resumeS3Service.getBucketNameForUser(userInfo.getId());
-            resumeS3Service.createBucketIfNotExists(bucketName);
-
-            String fileName = file.getOriginalFilename();
-            log.info("Uploading resume file: {} for user: {} to bucket: {}", fileName, userInfo.getId(), bucketName);
-
-            String s3Key = resumeS3Service.uploadResume(bucketName, fileName, file.getInputStream());
-            userService.updateBucketName(bucketName, userInfo);
-
-            String text = resumeMarkdownConverterService.convertResumeToMarkdown(file);
-            ResumeDetail resumeDetail = resumeLlmService.parseResumeText(text);
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("message", "Resume uploaded successfully");
-            response.put("fileName", fileName);
-            response.put("s3Key", s3Key);
-            response.put("fileSize", file.getSize());
-            response.put("contentType", file.getContentType());
-
-            log.info("Resume uploaded successfully. S3 Key: {}", s3Key);
+            Map<String, Object> response = resumeProcessingService.processAndSaveResume(file, userInfo);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IOException e) {
             log.error("Error uploading resume: {}", e.getMessage());

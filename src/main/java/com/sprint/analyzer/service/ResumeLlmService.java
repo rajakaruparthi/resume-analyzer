@@ -3,8 +3,10 @@ package com.sprint.analyzer.service;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sprint.analyzer.entity.ResumeSectionScore;
 import com.sprint.analyzer.model.ResumeDetail;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -60,6 +62,10 @@ public class ResumeLlmService {
     }
 
     public ResumeDetail parseResumeText(String resumeText) {
+        return parseResumeText(resumeText, null);
+    }
+
+    public ResumeDetail parseResumeText(String resumeText, Map<String, com.sprint.analyzer.entity.ResumeSectionScore> cachedSectionScores) {
         String apiKey = loadApiKey();
         if (apiKey == null || apiKey.trim().isEmpty()) {
             log.error("OpenAI API Key is not set or empty in environment or .env file.");
@@ -141,6 +147,11 @@ public class ResumeLlmService {
                     "The overallScore MUST be the average of the 4 breakdown scores.\n" +
                     "Ensure you extract the values accurately from the resume text. Do NOT hallucinate names, emails, companies or details. Only extract what is present in the resume text. If something is missing, leave the field empty or use empty array/null.";
 
+            if (cachedSectionScores != null && !cachedSectionScores.isEmpty()) {
+                StringBuilder cachedInstructions = getCachedInstructions(cachedSectionScores);
+                systemPrompt += cachedInstructions.toString();
+            }
+
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", "gpt-4o-mini");
             requestBody.put("response_format", Map.of("type", "json_object"));
@@ -178,5 +189,15 @@ public class ResumeLlmService {
             log.error("Error communicating with LLM or parsing response: {}", e.getMessage(), e);
             throw new RuntimeException("LLM parsing failed: " + e.getMessage(), e);
         }
+    }
+
+    private static @NotNull StringBuilder getCachedInstructions(Map<String, ResumeSectionScore> cachedSectionScores) {
+        StringBuilder cachedInstructions = new StringBuilder();
+        cachedInstructions.append("\n\nCRITICAL: The following sections in this resume are unchanged from a previous upload. You MUST reuse their scores and feedback comments exactly as provided below in the 'scoreBreakdown' field, and focus your analysis and feedback on the other parts of the resume:\n");
+        for (Map.Entry<String, ResumeSectionScore> entry : cachedSectionScores.entrySet()) {
+            cachedInstructions.append(String.format("- Section '%s': Score = %d, Comments = '%s'\n",
+                    entry.getKey(), entry.getValue().getScore(), entry.getValue().getFeedback()));
+        }
+        return cachedInstructions;
     }
 }

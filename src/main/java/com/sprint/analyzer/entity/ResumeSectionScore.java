@@ -1,60 +1,55 @@
 package com.sprint.analyzer.entity;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-
 @Entity
-@Table(name = "resume_metadata")
+@Table(name = "resume_section_score")
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ResumeMetadata {
+public class ResumeSectionScore {
 
     @Id
     @GeneratedValue
     @Column(columnDefinition = "uuid")
     private UUID id;
 
+    @Column(name = "resume_id", nullable = false)
+    private UUID resumeId;
+
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
-    @Column(name = "original_filename", nullable = false, columnDefinition = "TEXT")
-    private String originalFilename;
+    @Column(name = "section_name", nullable = false, length = 100)
+    private String sectionName;
 
-    @Column(name = "s3_key", columnDefinition = "TEXT")
-    private String s3Key;
+    @Column(name = "section_hash", length = 64)
+    private String sectionHash;
 
-    @Column(name = "file_type", length = 20)
-    private String fileType;
+    @Column(name = "score")
+    private Integer score;
 
-    @Column(name = "token_count")
-    private Integer tokenCount;
-
-    @Column(name = "status", length = 50)
-    private String status;
-
-    @Column(name = "overall_score")
-    private Integer overallScore;
-
-    @Column(name = "resume_hash", length = 64)
-    private String resumeHash;
+    @Column(name = "feedback", columnDefinition = "TEXT")
+    private String feedback;
 
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "resume_id", insertable = false, updatable = false)
+    private ResumeMetadata resumeMetadata;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
-
 }
-
-

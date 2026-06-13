@@ -6,14 +6,11 @@ import com.sprint.analyzer.until.MarkdownConverter;
 import com.sprint.analyzer.until.PdfToMarkdownConverter;
 
 import com.sprint.analyzer.until.WordToMarkdownConverter;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty; // Keep conditional if needed
 import org.springframework.stereotype.Service;
-
-import java.io.InputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +35,7 @@ public class ResumeMarkdownConverterService {
      * @throws RuntimeException if conversion fails.
      */
 
-    public String convertResumeToMarkdown(MultipartFile file) {
+    public String convertToText(MultipartFile file) {
         try {
             String fileName = file.getOriginalFilename();
             MarkdownConverter converter = null;
