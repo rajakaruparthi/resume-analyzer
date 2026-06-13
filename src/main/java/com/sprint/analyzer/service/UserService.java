@@ -127,6 +127,12 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    public void updateBucketName(String bucketName, User user) {
+        user.setBucketName(bucketName);
+        log.info("Updating bucket name for user with ID: {}", user.getId());
+        userRepository.save(user);
+    }
+
     /**
      * Delete a user by ID.
      *

@@ -41,6 +41,9 @@ public class ResumeMetadata {
     @Column(name = "status", length = 50)
     private String status;
 
+    @Column(name = "overall_score")
+    private Integer overallScore;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt;
