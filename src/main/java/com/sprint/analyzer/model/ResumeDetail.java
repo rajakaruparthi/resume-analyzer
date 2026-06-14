@@ -26,7 +26,12 @@ public class ResumeDetail {
     private List<String> improvements;
     private List<ScoreBreakdown> scoreBreakdown;
 
+    private Boolean isResume;
+    private List<String> missingSections;
+    private List<String> weakSections;
+
     private ResumeData resumeData;
+    private List<SectionScoreDto> sectionScores;
 
     @Data
     @Builder
@@ -35,6 +40,20 @@ public class ResumeDetail {
     public static class ScoreBreakdown {
         private String category;
         private int score;
-        private String comments;
+        private List<String> strengths;
+        private List<String> improvements;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class SectionScoreDto {
+        private String sectionName;
+        private String sectionHash;
+        private Integer score;
+        private String feedback;
+        private List<String> strengths;
+        private List<String> improvements;
     }
 }

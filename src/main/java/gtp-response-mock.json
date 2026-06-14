@@ -1,0 +1,153 @@
+{
+  "candidateName": "RAJA KARUPARTHI",
+  "detailedFeedback": "The resume is well-structured and provides a comprehensive overview of the candidate's experience and skills. The professional summary effectively highlights key achievements and areas of expertise. However, the formatting could be improved for better readability, such as consistent bullet point styles and spacing. Additionally, the projects section could benefit from clearer delineation between personal and professional projects.",
+  "strengths": [
+    "Extensive experience in software engineering with a focus on microservices and cloud-native solutions.",
+    "Strong technical skills across multiple programming languages and frameworks, with notable achievements in AI engineering."
+  ],
+  "improvements": [
+    "Enhance formatting for better readability, including consistent bullet points and spacing.",
+    "Clarify the distinction between personal and professional projects in the projects section."
+  ],
+  "scoreBreakdown": [
+    {
+      "category": "Content & Experience",
+      "score": 85,
+      "comments": "The content is rich and detailed, showcasing a variety of relevant experiences and technical skills."
+    },
+    {
+      "category": "Impact & Achievements",
+      "score": 75,
+      "comments": "While there are notable achievements, quantifying results in more instances would strengthen this section."
+    },
+    {
+      "category": "Education & Skills",
+      "score": 90,
+      "comments": "Strong educational background and a diverse skill set relevant to the field."
+    },
+    {
+      "category": "Formatting & Design",
+      "score": 80,
+      "comments": "Overall design is good, but minor adjustments in formatting could enhance clarity."
+    }
+  ],
+  "overallScore": 82.5,
+  "resumeData": {
+    "name": "RAJA KARUPARTHI",
+    "title": "Software Engineer",
+    "email": "rajapkaruparthi@outlook.com",
+    "phone": "508-406-8278",
+    "website": "Github",
+    "location": "",
+    "summary": "Software Engineer with 10 years of experience designing and delivering enterprise applications, microservices, distributed systems, and cloud-native solutions. Expertise in Java, Spring Boot, Spring Cloud, Kafka, Redis, Oracle, React, Angular, AWS, Docker, and CI/CD. Built and maintained high-volume platforms processing 100+ transactions per second and supporting thousands of users. Recently architected AI-powered engineering agents using Claude, Pinecone, and RAG techniques that improved engineering productivity by approximately 30%.",
+    "experience": [
+      {
+        "company": "Verizon",
+        "role": "Software Engineer",
+        "duration": "Jul 2022 – Present",
+        "bullets": [
+          "Architect and develop enterprise-grade microservices supporting Revenue Assurance (REVO) and Mobile Telephone Application System (MTAS) platforms using Java, Spring Boot, Oracle, Redis, IBM MQ, Oracle AQ, and Apache Camel.",
+          "Maintain and enhance 14+ production microservices serving thousands of users and supporting mission-critical telecommunications operations.",
+          "Built high-throughput event-driven systems processing 100+ transactions per second using IBM MQ, Oracle AQ, Redis, Apache Camel, and multithreaded Java processing.",
+          "Developed MTAS integrations handling activation, provisioning, and mobile network transactions from external partners including Charter and Comcast.",
+          "Designed and implemented secure REST APIs using OAuth2, OpenAPI, and Spring Security while maintaining 90%+ test coverage.",
+          "Modernized legacy services by upgrading applications to JDK 17 and Spring Boot 3.x, improving security, maintainability, and operational performance.",
+          "Developed complex SQL and PL/SQL scripts for data extraction, reconciliation, reporting, production support, and root-cause analysis across Revenue Assurance and MTAS platforms.",
+          "Built Python-based data collection, processing, and reporting utilities that aggregated information from multiple enterprise systems, automated manual workflows, and improved operational visibility.",
+          "Automated fallout detection and operational reporting through Python scripts that analyzed large datasets, identified transaction anomalies, and generated actionable insights for business and engineering teams.",
+          "Leveraged Oracle SQL, PL/SQL, and Python to perform large-scale data analysis, trend identification, and troubleshooting of revenue-impacting incidents, reducing investigation time.",
+          "Architected AI-powered engineering agents using Claude, Pinecone, and Retrieval-Augmented Generation (RAG) to analyze approach documents, search code across 5 repositories, perform impact analysis, and generate implementation-ready code recommendations.",
+          "Delivered approximately 30% improvement in engineering productivity by automating requirement-to-code discovery, code generation, and implementation workflows.",
+          "Leveraged Python, statistical analysis, and machine learning techniques to analyze device and line promotion drop patterns, enabling early identification of revenue-impacting fallouts and improving operational decision-making."
+        ]
+      },
+      {
+        "company": "Charter Communications",
+        "role": "Software Engineer",
+        "duration": "2019, 2021–2022",
+        "bullets": [
+          "Designed and developed cloud-native microservices supporting Spectrum Mobile platforms using Java, Spring Boot, Kafka, Redis, Docker, and Jenkins.",
+          "Built middleware and caching services supporting traffic exceeding 10,000 requests per minute.",
+          "Led and mentored 2 junior developers through design reviews, implementation guidance, and code reviews.",
+          "Implemented Redis caching strategies that significantly improved API responsiveness and reduced backend system load.",
+          "Automated billing reconciliation and auditing processes using Python, reducing manual effort and improving data accuracy."
+        ]
+      },
+      {
+        "company": "Sam Houston State University",
+        "role": "ERP Analyst III / Full Stack Developer",
+        "duration": "2016 Sept – 2019 March",
+        "bullets": [
+          "Designed and developed enterprise applications using Java, PHP, JavaScript, SQL, and XML.",
+          "Built CI/CD pipelines using Jenkins, Terraform, Ansible, Selenium, and Infrastructure-as-Code practices.",
+          "Led code reviews, resolved production issues, and delivered integrations across multiple university systems."
+        ]
+      },
+      {
+        "company": "Texas Department of Criminal Justice",
+        "role": "Java Developer",
+        "duration": "4 months",
+        "bullets": []
+      },
+      {
+        "company": "Sam Houston State University",
+        "role": "Developer (Graduate Assistant)",
+        "duration": "9 months",
+        "bullets": []
+      },
+      {
+        "company": "Cognizant Technology Solutions (Amex)",
+        "role": "Programmer Analyst",
+        "duration": "15 months",
+        "bullets": []
+      }
+    ],
+    "education": [
+      {
+        "school": "Sam Houston State University",
+        "degree": "Master’s in computer and information science",
+        "duration": ""
+      },
+      {
+        "school": "Amrita University",
+        "degree": "Bachelor of Technology, Electrical Engineering",
+        "duration": ""
+      }
+    ],
+    "skills": [
+      "Java",
+      "Python",
+      "JavaScript",
+      "TypeScript",
+      "SQL",
+      "PL/SQL",
+      "Spring Boot",
+      "Spring Cloud",
+      "Hibernate",
+      "JPA",
+      "React",
+      "Angular 7",
+      "Apache Camel",
+      "Kafka",
+      "IBM MQ",
+      "Oracle AQ",
+      "JMS",
+      "AWS",
+      "Docker",
+      "Jenkins",
+      "Git",
+      "Maven",
+      "Oracle",
+      "PostgreSQL",
+      "MySQL",
+      "MongoDB",
+      "Cassandra",
+      "Redis",
+      "Claude",
+      "RAG",
+      "Pinecone",
+      "AI Agents",
+      "Code Generation Workflows"
+    ]
+  }
+}

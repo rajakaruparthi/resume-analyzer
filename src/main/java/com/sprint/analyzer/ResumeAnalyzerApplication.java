@@ -11,7 +11,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class ResumeAnalyzerApplication {
 
     public static void main(String[] args) {
+        System.out.println("Starting Resume Analyzer Application...");
         SpringApplication.run(ResumeAnalyzerApplication.class, args);
+        System.out.println("Started Resume Analyzer Application...");
+
     }
 
 }

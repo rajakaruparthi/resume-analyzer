@@ -17,11 +17,28 @@ public class ResumeData {
     private String email;
     private String phone;
     private String website;
+    private String linkedin;
+    private String github;
     private String location;
+
     private String summary;
-    private List<WorkExperience> experience;
+
+    private List<Experience> experience;
+
+    private List<Project> projects;
+
     private List<Education> education;
+
     private List<String> skills;
+
+    private List<String> certifications;
+
+    private List<String> awards;
+
+    private List<String> publications;
+
+    private List<String> languages;
+
 
     @Data
     @Builder

@@ -99,15 +99,21 @@ public class ResumeProcessingService {
         for (ResumeSection section : sections) {
             int score;
             String feedback;
+            List<String> strengths;
+            List<String> improvements;
 
             if (cachedSectionScores.containsKey(section.sectionName())) {
                 ResumeSectionScore cached = cachedSectionScores.get(section.sectionName());
                 score = cached.getScore();
                 feedback = cached.getFeedback();
+                strengths = cached.getStrengths();
+                improvements = cached.getImprovements();
                 log.info("Reusing cached score and feedback for section: {}", section.sectionName());
             } else {
                 score = getMappedScore(section.sectionName(), resumeDetail.getScoreBreakdown(), overallScore);
                 feedback = getMappedFeedback(section.sectionName(), resumeDetail.getScoreBreakdown(), detailedFeedback);
+                strengths = getMappedStrengths(section.sectionName(), resumeDetail.getScoreBreakdown());
+                improvements = getMappedImprovements(section.sectionName(), resumeDetail.getScoreBreakdown());
             }
 
             ResumeSectionScore sectionScore = ResumeSectionScore.builder()
@@ -117,6 +123,8 @@ public class ResumeProcessingService {
                     .sectionHash(section.hash())
                     .score(score)
                     .feedback(feedback)
+                    .strengths(strengths)
+                    .improvements(improvements)
                     .build();
             resumeSectionScoreRepository.save(sectionScore);
         }
@@ -156,18 +164,77 @@ public class ResumeProcessingService {
         String search = sectionName.toUpperCase();
         for (var b : breakdowns) {
             String cat = b.getCategory().toUpperCase();
-            if (search.equals("EXPERIENCE") && (cat.contains("EXPERIENCE") || cat.contains("WORK")))
-                return b.getComments();
-            if (search.equals("SKILLS") && cat.contains("SKILLS")) return b.getComments();
-            if (search.equals("EDUCATION") && cat.contains("EDUCATION")) return b.getComments();
-            if (search.equals("SUMMARY") && (cat.contains("CONTENT") || cat.contains("SUMMARY")))
-                return b.getComments();
-            if (search.equals("PROJECTS") && (cat.contains("IMPACT") || cat.contains("PROJECTS")))
-                return b.getComments();
-            if (search.equals("CERTIFICATIONS") && (cat.contains("EDUCATION") || cat.contains("CERTIFICATION")))
-                return b.getComments();
-            if (search.equals("GENERAL") && cat.contains("FORMATTING")) return b.getComments();
+            boolean match = false;
+            if (search.equals("EXPERIENCE") && (cat.contains("EXPERIENCE") || cat.contains("WORK"))) match = true;
+            else if (search.equals("SKILLS") && cat.contains("SKILLS")) match = true;
+            else if (search.equals("EDUCATION") && cat.contains("EDUCATION")) match = true;
+            else if (search.equals("SUMMARY") && (cat.contains("CONTENT") || cat.contains("SUMMARY"))) match = true;
+            else if (search.equals("PROJECTS") && (cat.contains("IMPACT") || cat.contains("PROJECTS"))) match = true;
+            else if (search.equals("CERTIFICATIONS") && (cat.contains("EDUCATION") || cat.contains("CERTIFICATION"))) match = true;
+            else if (search.equals("GENERAL") && cat.contains("FORMATTING")) match = true;
+
+            if (match) {
+                List<String> s = b.getStrengths();
+                List<String> imp = b.getImprovements();
+                StringBuilder sb = new StringBuilder();
+                if (s != null && !s.isEmpty()) {
+                    sb.append("Strengths:\n");
+                    for (String str : s) {
+                        sb.append("- ").append(str).append("\n");
+                    }
+                }
+                if (imp != null && !imp.isEmpty()) {
+                    if (!sb.isEmpty()) sb.append("\n");
+                    sb.append("Improvements Needed:\n");
+                    for (String i : imp) {
+                        sb.append("- ").append(i).append("\n");
+                    }
+                }
+                return !sb.isEmpty() ? sb.toString().trim() : defaultFeedback;
+            }
         }
         return defaultFeedback;
+    }
+
+    private List<String> getMappedStrengths(String sectionName, List<ResumeDetail.ScoreBreakdown> breakdowns) {
+        if (breakdowns == null) return new java.util.ArrayList<>();
+        String search = sectionName.toUpperCase();
+        for (var b : breakdowns) {
+            String cat = b.getCategory().toUpperCase();
+            boolean match = false;
+            if (search.equals("EXPERIENCE") && (cat.contains("EXPERIENCE") || cat.contains("WORK"))) match = true;
+            else if (search.equals("SKILLS") && cat.contains("SKILLS")) match = true;
+            else if (search.equals("EDUCATION") && cat.contains("EDUCATION")) match = true;
+            else if (search.equals("SUMMARY") && (cat.contains("CONTENT") || cat.contains("SUMMARY"))) match = true;
+            else if (search.equals("PROJECTS") && (cat.contains("IMPACT") || cat.contains("PROJECTS"))) match = true;
+            else if (search.equals("CERTIFICATIONS") && (cat.contains("EDUCATION") || cat.contains("CERTIFICATION"))) match = true;
+            else if (search.equals("GENERAL") && cat.contains("FORMATTING")) match = true;
+
+            if (match) {
+                return b.getStrengths() != null ? b.getStrengths() : new java.util.ArrayList<>();
+            }
+        }
+        return new java.util.ArrayList<>();
+    }
+
+    private List<String> getMappedImprovements(String sectionName, List<ResumeDetail.ScoreBreakdown> breakdowns) {
+        if (breakdowns == null) return new java.util.ArrayList<>();
+        String search = sectionName.toUpperCase();
+        for (var b : breakdowns) {
+            String cat = b.getCategory().toUpperCase();
+            boolean match = false;
+            if (search.equals("EXPERIENCE") && (cat.contains("EXPERIENCE") || cat.contains("WORK"))) match = true;
+            else if (search.equals("SKILLS") && cat.contains("SKILLS")) match = true;
+            else if (search.equals("EDUCATION") && cat.contains("EDUCATION")) match = true;
+            else if (search.equals("SUMMARY") && (cat.contains("CONTENT") || cat.contains("SUMMARY"))) match = true;
+            else if (search.equals("PROJECTS") && (cat.contains("IMPACT") || cat.contains("PROJECTS"))) match = true;
+            else if (search.equals("CERTIFICATIONS") && (cat.contains("EDUCATION") || cat.contains("CERTIFICATION"))) match = true;
+            else if (search.equals("GENERAL") && cat.contains("FORMATTING")) match = true;
+
+            if (match) {
+                return b.getImprovements() != null ? b.getImprovements() : new java.util.ArrayList<>();
+            }
+        }
+        return new java.util.ArrayList<>();
     }
 }

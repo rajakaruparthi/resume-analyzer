@@ -41,6 +41,14 @@ public class ResumeSectionScore {
     @Column(name = "feedback", columnDefinition = "TEXT")
     private String feedback;
 
+    @Convert(converter = com.sprint.analyzer.until.StringListConverter.class)
+    @Column(name = "strengths", columnDefinition = "TEXT")
+    private java.util.List<String> strengths;
+
+    @Convert(converter = com.sprint.analyzer.until.StringListConverter.class)
+    @Column(name = "improvements", columnDefinition = "TEXT")
+    private java.util.List<String> improvements;
+
     @Column(name = "created_at")
     @CreationTimestamp
     private LocalDateTime createdAt;
