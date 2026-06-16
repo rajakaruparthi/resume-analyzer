@@ -23,7 +23,7 @@ jobs:
           script: |
             set -e
 
-            cd ~/resume-analyzer-backend
+            cd ~/resume-analyzer
 
             echo "Pulling latest code..."
             git pull origin main
