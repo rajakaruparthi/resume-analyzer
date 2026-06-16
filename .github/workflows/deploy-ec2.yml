@@ -1,0 +1,44 @@
+name: Deploy Backend to EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            cd ~/resume-analyzer-backend
+
+            echo "Pulling latest code..."
+            git pull origin main
+
+            echo "Building Spring Boot application..."
+            mvn clean package -DskipTests
+
+            echo "Stopping old containers..."
+            docker compose down
+
+            echo "Starting new containers..."
+            docker compose up -d --build
+
+            echo "Cleaning unused Docker images..."
+            docker image prune -f
+
+            echo "Deployment completed successfully."
+            docker ps
