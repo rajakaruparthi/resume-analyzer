@@ -2,7 +2,6 @@
 
 <configuration>
 
-    ```
     <property name="LOG_PATH" value="logs"/>
     <property name="APP_NAME" value="resume-analyzer"/>
 
@@ -95,6 +94,5 @@
         <appender-ref ref="FILE"/>
         <appender-ref ref="ERROR_FILE"/>
     </root>
-    ```
 
 </configuration>
