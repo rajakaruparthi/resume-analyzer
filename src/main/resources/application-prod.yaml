@@ -39,6 +39,7 @@ logging:
     com.sprint: INFO
     org.hibernate.SQL: WARN
     org.springframework.web: WARN
+    org.springframework.security: DEBUG
   pattern:
     console: '{"time":"%d{yyyy-MM-dd HH:mm:ss.SSS}","level":"%p","logger":"%logger","thread":"%t","msg":"%m"}%n'
 

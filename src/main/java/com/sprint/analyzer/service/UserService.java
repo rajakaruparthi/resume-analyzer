@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import com.sprint.analyzer.properties.AwsProperties;
 
 
 @Service
@@ -28,6 +29,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final FeatureFlagService featureFlagService;
     private final EmailVerificationService emailVerificationService;
+    private final AwsProperties awsProperties;
 
     public User createUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -35,6 +37,17 @@ public class UserService {
             throw new IllegalArgumentException("User with email " + user.getEmail() + " already exists");
         }
         user.setRole(user.getRole() != null ? user.getRole() : Role.USER);
+        if (user.getId() == null) {
+            user.setId(UUID.randomUUID());
+        }
+        if (user.getBucketName() == null || user.getBucketName().isBlank()) {
+            String baseBucket = awsProperties.getBucketName();
+            if (baseBucket == null || baseBucket.isBlank()) {
+                user.setBucketName(user.getId().toString().toLowerCase());
+            } else {
+                user.setBucketName((baseBucket + "-" + user.getId().toString()).toLowerCase());
+            }
+        }
         User saved = userRepository.save(user);
         log.info("Creating new user with email: {}", user.getEmail());
         if (featureFlagService.isEnabled("email_verification")) {
@@ -55,11 +68,20 @@ public class UserService {
         boolean verificationEnabled = featureFlagService.isEnabled("email_verification");
 
         User user = new User();
+        UUID userId = UUID.randomUUID();
+        user.setId(userId);
         user.setEmail(request.getEmail());
         user.setName(request.getName());
         user.setPhone(request.getPhone());
         user.setPassword(request.getPassword());
         user.setRole(request.getRole() != null ? request.getRole() : Role.USER);
+
+        String baseBucket = awsProperties.getBucketName();
+        if (baseBucket == null || baseBucket.isBlank()) {
+            user.setBucketName(userId.toString().toLowerCase());
+        } else {
+            user.setBucketName((baseBucket + "-" + userId.toString()).toLowerCase());
+        }
 
         log.info("Registered new user with email: {} (verificationEnabled={})", user.getEmail(), verificationEnabled);
 
